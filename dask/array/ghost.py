@@ -202,10 +202,22 @@ def nearest(x, axis, depth):
     right = ((slice(None, None, None),) * axis
            + (slice(-1, -2, -1),)
            + (slice(None, None, None),) * (x.ndim - axis - 1))
-    l = [x[left]] * depth
-    r = [x[right]] * depth
 
-    return concatenate(l + [x] + r, axis=axis)
+    l = concatenate([x[left]] * depth, axis=axis)
+    r = concatenate([x[right]] * depth, axis=axis)
+
+    # each slice in l & r is its own chunk, we want to rechunk them
+    # to have the same chunking as the array
+    lchunks = list(l.chunks)
+    lchunks[axis] = (depth,)
+    rchunks = list(r.chunks)
+    rchunks[axis] = (depth,)
+
+    l = l.rechunk(tuple(lchunks))
+    r = r.rechunk(tuple(rchunks))
+
+    ret = concatenate([l, x, r], axis=axis)
+    return ret
 
 
 
