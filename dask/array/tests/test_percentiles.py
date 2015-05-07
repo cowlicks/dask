@@ -1,7 +1,9 @@
-import dask.array as da
-from dask.array.percentile import _percentile
-import dask
+import unittest
+
 import numpy as np
+
+import dask.array as da
+import dask
 
 
 def eq(a, b):
@@ -15,6 +17,7 @@ def eq(a, b):
     return c
 
 
+@unittest.skipIf(int(np.__version__[2]) < 8, "Need numpy > 1.8")
 def test_percentile():
     d = da.ones((16,), chunks=(4,))
     assert eq(da.percentile(d, [0, 50, 100]), [1, 1, 1])
@@ -46,6 +49,7 @@ def test_percentile_with_categoricals():
     assert (p.compute().codes == [0]).all()
 
 
+@unittest.skipIf(int(np.__version__[2]) < 8, "Need numpy > 1.8")
 def test_percentiles_with_empty_arrays():
     x = da.ones(10, chunks=((5, 0, 5),))
     assert da.percentile(x, [10, 50, 90]).compute().tolist() == [1, 1, 1]
