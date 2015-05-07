@@ -1,11 +1,13 @@
-import dask
-from dask.compatibility import skip
-import dask.array as da
-from dask.array import Array
-from dask.array.slicing import slice_array, _slice_1d, take, new_blockdim
+import unittest
 from operator import getitem
+
 import numpy as np
 from toolz import merge
+
+import dask
+import dask.array as da
+from dask.compatibility import skip
+from dask.array.slicing import slice_array, _slice_1d, take, new_blockdim
 
 
 def eq(a, b):
@@ -374,6 +376,7 @@ def test_slice_stop_0():
     assert eq(a, b)
 
 
+@unittest.skipIf(int(np.__version__[2]) < 8, "Need numpy > 1.8")
 def test_slice_list_then_None():
     x = da.zeros(shape=(5, 5), chunks=(3, 3))
     y = x[[2, 1]][None]
