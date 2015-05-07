@@ -1,7 +1,7 @@
-import unittest
 from operator import getitem
 
 import numpy as np
+import pytest
 from toolz import merge
 
 import dask
@@ -376,7 +376,7 @@ def test_slice_stop_0():
     assert eq(a, b)
 
 
-@unittest.skipIf(int(np.__version__[2]) < 8, "Need numpy > 1.8")
+@pytest.mark.skipif(int(np.__version__[2]) < 8, reason="Need numpy > 1.8")
 def test_slice_list_then_None():
     x = da.zeros(shape=(5, 5), chunks=(3, 3))
     y = x[[2, 1]][None]

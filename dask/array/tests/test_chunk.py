@@ -1,8 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
-import unittest
-
 import numpy as np
+import pytest
 
 from dask.array.chunk import coarsen, keepdims_wrapper
 
@@ -63,7 +62,7 @@ def test_keepdims_wrapper_one_axis():
     assert (rwf == np.array([[[12, 15, 18, 21], [48, 51, 54, 57]]])).all()
 
 
-@unittest.skipIf(int(np.__version__[2]) < 7, "Need numpy > 1.7")
+@pytest.mark.skipif(int(np.__version__[2]) < 7, reason="Need numpy > 1.7")
 def test_keepdims_wrapper_two_axes():
     def summer(a, axis=None):
         return a.sum(axis=axis)
@@ -99,7 +98,7 @@ def eq(a, b):
     return c
 
 
-@unittest.skipIf(int(np.__version__[2]) < 7, "Need numpy > 1.7")
+@pytest.mark.skipif(int(np.__version__[2]) < 7, reason="Need numpy > 1.7")
 def test_coarsen():
     x = np.random.randint(10, size=(24, 24))
     y = coarsen(np.sum, x, {0: 2, 1: 4})

@@ -1,8 +1,7 @@
 from __future__ import absolute_import, division, print_function
 
-import unittest
-
 import numpy as np
+import pytest
 
 import dask.array as da
 from dask.utils import ignoring
@@ -36,7 +35,7 @@ def test_reductions():
     # assert eq(a.argmin(), x.argmin())
 
 
-@unittest.skipIf(int(np.__version__[2]) < 8, "Need numpy > 1.8")
+@pytest.mark.skipif(int(np.__version__[2]) < 8, reason="Need numpy > 1.8")
 def test_nan():
     x = np.array([[1, np.nan, 3, 4],
                   [5, 6, 7, np.nan],

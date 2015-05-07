@@ -1,5 +1,3 @@
-import unittest
-
 import numpy as np
 from numpy.testing import assert_array_almost_equal
 import pytest
@@ -17,7 +15,7 @@ def eq(a, b):
     assert_array_almost_equal(a, b)
 
 
-@unittest.skipIf(int(np.__version__[2]) < 8, "Need numpy > 1.8")
+@pytest.mark.skipif(int(np.__version__[2]) < 8, reason="Need numpy > 1.8")
 def test_linspace():
     darr = da.linspace(6, 49, chunks=5)
     nparr = np.linspace(6, 49)

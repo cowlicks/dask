@@ -1,13 +1,15 @@
 from __future__ import absolute_import, division, print_function
 
-import unittest
+from operator import add
+
+import pytest
+from toolz import merge
+from toolz.curried import identity
 
 import dask
 import dask.array as da
 from dask.array.core import *
 from dask.utils import raises, ignoring
-from toolz import merge
-from operator import add
 
 from dask.array.numpy_compat import full
 
@@ -276,8 +278,8 @@ def test_concatenate():
     assert raises(ValueError, lambda: concatenate([a, b, c], axis=2))
 
 
-@unittest.skipIf(int(np.__version__[2]) < 8,
-                 "Scalar indices not supported until numpy 1.8")
+@pytest.mark.skipif(int(np.__version__[2]) < 8,
+                    reason="Scalar indices not supported until numpy 1.8")
 def test_take():
     x = np.arange(400).reshape((20, 20))
     a = from_array(x, chunks=(5, 5))
@@ -313,9 +315,9 @@ def test_isnull():
         assert eq(notnull(a), ~np.isnan(x))
 
 
-@unittest.skipIf(int(np.__version__[2]) < 8,
-                 ("isclose not added until numpy 1.7, and is broken for some "
-                  "reason in numpy 1.8"))
+@pytest.mark.skipif(int(np.__version__[2]) < 8,
+                    reason=("isclose not added until numpy 1.7, and is broken "
+                            "for some " "reason in numpy 1.8"))
 def test_isclose():
     x = np.array([0, np.nan, 1, 1.5])
     y = np.array([1e-9, np.nan, 1, 2])
@@ -325,8 +327,9 @@ def test_isclose():
               np.isclose(x, y, equal_nan=True))
 
 
-@unittest.skipIf(int(np.__version__[2]) < 7,
-                "multiple axis arguments in sum not supported until numpy 1.7")
+@pytest.mark.skipif(int(np.__version__[2]) < 7,
+                    reason="multiple axis arguments in sum not supported until"
+                           " numpy 1.7")
 def test_elemwise_on_scalars():
     x = np.arange(10)
     a = from_array(x, chunks=(5,))
@@ -361,7 +364,7 @@ def test_operators():
     assert eq(a, +x)
 
 
-@unittest.skipIf(int(np.__version__[2]) < 7, "Need numpy > 1.7")
+@pytest.mark.skipif(int(np.__version__[2]) < 7, reason="Need numpy > 1.7")
 def test_field_access():
     x = np.array([(1, 1.0), (2, 2.0)], dtype=[('a', 'i4'), ('b', 'f4')])
     y = from_array(x, chunks=(1,))
@@ -369,6 +372,7 @@ def test_field_access():
     assert eq(y[['b', 'a']], x[['b', 'a']])
 
 
+@pytest.mark.skipif(int(np.__version__[2]) < 8, reason="Need numpy > 1.8")
 def test_reductions():
     x = np.arange(400).reshape((20, 20))
     a = from_array(x, chunks=(7, 7))
@@ -416,7 +420,7 @@ def test_T():
     assert eq(x.T, a.T)
 
 
-@unittest.skipIf(int(np.__version__[2]) < 8, "Need numpy > 1.8")
+@pytest.mark.skipif(int(np.__version__[2]) < 8, reason="Need numpy > 1.8")
 def test_norm():
     a = np.arange(200, dtype='f8').reshape((20, 10))
     b = from_array(a, chunks=(5, 5))
@@ -427,7 +431,7 @@ def test_norm():
     assert b.vnorm(ord=4, axis=0, keepdims=True).ndim == b.ndim
 
 
-@unittest.skipIf(int(np.__version__[2]) < 8, "Need numpy > 1.8")
+@pytest.mark.skipif(int(np.__version__[2]) < 8, reason="Need numpy > 1.8")
 def test_choose():
     x = np.random.randint(10, size=(15, 16))
     d = from_array(x, chunks=(4, 5))
@@ -436,7 +440,7 @@ def test_choose():
     assert eq(choose(d > 5, [-d, d]), np.choose(x > 5, [-x, x]))
 
 
-@unittest.skipIf(int(np.__version__[2]) < 8, "Need numpy > 1.8")
+@pytest.mark.skipif(int(np.__version__[2]) < 8, reason="Need numpy > 1.8")
 def test_where():
     x = np.random.randint(10, size=(15, 16))
     d = from_array(x, chunks=(4, 5))
@@ -447,8 +451,9 @@ def test_where():
     assert eq(where(d > 5, d, -e[:, None]), np.where(x > 5, x, -y[:, None]))
 
 
-@unittest.skipIf(int(np.__version__[2]) < 7,
-                "multiple axis arguments in sum not supported until numpy 1.7")
+@pytest.mark.skipif(int(np.__version__[2]) < 7,
+                    reason=("multiple axis arguments in sum not supported "
+                            "until numpy 1.7"))
 def test_coarsen():
     x = np.random.randint(10, size=(24, 24))
     d = from_array(x, chunks=(4, 8))
@@ -459,7 +464,7 @@ def test_coarsen():
                     coarsen(da.sum, d, {0: 2, 1: 4}))
 
 
-@unittest.skipIf(int(np.__version__[2]) < 8, "Need numpy > 1.8")
+@pytest.mark.skipif(int(np.__version__[2]) < 8, reason="Need numpy > 1.8")
 def test_insert():
     x = np.random.randint(10, size=(10, 10))
     a = from_array(x, chunks=(5, 5))
@@ -586,7 +591,7 @@ def test_slicing_with_ndarray():
     assert eq(d[np.ones(8, dtype=bool)], x)
 
 
-@unittest.skipIf(int(np.__version__[2]) < 7, "Need numpy > 1.7")
+@pytest.mark.skipif(int(np.__version__[2]) < 7, reason="Need numpy > 1.7")
 def test_dtype():
     d = da.ones((4, 4), chunks=(2, 2))
 
@@ -636,7 +641,7 @@ def test_store():
     assert raises(ValueError, lambda: store([at, bt], [at, bt]))
 
 
-@unittest.skipIf(int(np.__version__[2]) < 7, "Need numpy > 1.7")
+@pytest.mark.skipif(int(np.__version__[2]) < 7, reason="Need numpy > 1.7")
 def test_np_array_with_zero_dimensions():
     d = da.ones((4, 4), chunks=(2, 2))
     assert eq(np.array(d.sum()), np.array(d.compute().sum()))
@@ -695,7 +700,7 @@ def test_dtype_complex():
     assert eq(d[['numbers', 'text']]._dtype, x[['numbers', 'text']].dtype)
 
 
-@unittest.skipIf(int(np.__version__[2]) < 7, "Need numpy > 1.7")
+@pytest.mark.skipif(int(np.__version__[2]) < 7, reason="Need numpy > 1.7")
 def test_astype():
     x = np.ones(5, dtype='f4')
     d = da.from_array(x, chunks=(2,))
@@ -843,7 +848,7 @@ def test_arithmetic():
     assert eq(da.around(a, -1), np.around(x, -1))
 
 
-@unittest.skipIf(int(np.__version__[2]) < 8, "Need numpy > 1.8")
+@pytest.mark.skipif(int(np.__version__[2]) < 8, reason="Need numpy > 1.8")
 def test_reductions2():
     x = np.arange(5).astype('f4')
     a = da.from_array(x, chunks=(2,))
@@ -873,8 +878,9 @@ def test_optimize():
     assert all(key in result for key in expr._keys())
 
 
-@unittest.skipIf(int(np.__version__[2]) < 7,
-                "multiple axis arguments in sum not supported until numpy 1.7")
+@pytest.mark.skipif(int(np.__version__[2]) < 7,
+                    reason=("multiple axis arguments in sum not supported "
+                            "until numpy 1.7"))
 def test_slicing_with_non_ndarrays():
     class ARangeSlice(object):
         def __init__(self, start, stop):
@@ -907,7 +913,7 @@ def test_getarray():
     assert type(getarray(np.matrix([[1]]), 0)) == np.ndarray
 
 
-@unittest.skipIf(int(np.__version__[2]) < 7, "Need numpy > 1.7")
+@pytest.mark.skipif(int(np.__version__[2]) < 7, reason="Need numpy > 1.7")
 def test_squeeze():
     x = da.ones((10, 1), chunks=(3, 1))
 
