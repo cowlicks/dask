@@ -848,7 +848,7 @@ def test_arithmetic():
     assert eq(da.around(a, -1), np.around(x, -1))
 
 
-@pytest.mark.skipif(int(np.__version__[2]) < 8, reason="Need numpy > 1.8")
+@pytest.mark.skipif(int(np.__version__[2]) < 7, reason="Need numpy > 1.7")
 def test_reductions2():
     x = np.arange(5).astype('f4')
     a = da.from_array(x, chunks=(2,))
@@ -865,6 +865,14 @@ def test_reductions2():
     assert eq(da.nanmax(a), np.nanmax(x))
     assert eq(da.nanmin(a), np.nanmin(x))
     assert eq(da.nansum(a), np.nansum(x))
+
+
+@pytest.mark.skipif(int(np.__version__[2]) < 8, reason="Need numpy > 1.8")
+def test_reductions3():
+    """Seperate test since these need numpy 1.8"""
+    x = np.arange(5).astype('f4')
+    a = da.from_array(x, chunks=(2,))
+
     assert eq(da.nanvar(a), np.nanvar(x))
     assert eq(da.nanstd(a), np.nanstd(x))
 
