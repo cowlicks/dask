@@ -372,7 +372,7 @@ def test_field_access():
     assert eq(y[['b', 'a']], x[['b', 'a']])
 
 
-@pytest.mark.skipif(int(np.__version__[2]) < 8, reason="Need numpy > 1.8")
+@pytest.mark.skipif(int(np.__version__[2]) < 7, reason="Need numpy > 1.8")
 def test_reductions():
     x = np.arange(400).reshape((20, 20))
     a = from_array(x, chunks=(7, 7))
