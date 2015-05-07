@@ -1,9 +1,12 @@
 from __future__ import absolute_import, division, print_function
 
+import unittest
+
+import numpy as np
+
 import dask.array as da
 from dask.utils import ignoring
 from dask.array.reductions import arg_aggregate
-import numpy as np
 
 
 def eq(a, b):
@@ -33,6 +36,7 @@ def test_reductions():
     # assert eq(a.argmin(), x.argmin())
 
 
+@unittest.skipIf(int(np.__version__[2]) < 8, "Need numpy > 1.8")
 def test_nan():
     x = np.array([[1, np.nan, 3, 4],
                   [5, 6, 7, np.nan],
