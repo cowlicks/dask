@@ -1041,3 +1041,18 @@ def test_concatenate3():
                          [ 9, 10, 11,  9, 10, 11,  9, 10, 11],
                          [ 6,  7,  8,  6,  7,  8,  6,  7,  8],
                          [ 9, 10, 11,  9, 10, 11,  9, 10, 11]]]))
+
+
+def test_fancy_indexing_with_another_dask_array():
+    x = np.array([2, 1, 5, 2, 1])
+    d = da.from_array(x, chunks=2)
+
+    assert eq(d[d > 1],
+              x[x > 1])
+
+
+    x = np.array([[2, 1], [1, 2]])
+    d = da.from_array(x, chunks=1)
+
+    assert eq(np.sort(d[d > 1]),
+              np.sort(x[x > 1]))
