@@ -472,7 +472,7 @@ def topk(k, x):
     return Array(merge(dsk, x.dask), name2, chunks, dtype=x.dtype)
 
 
-def compute(*args, **kwargs):
+class Compute(object):
     """ Evaluate several dask arrays at once
 
     The result of this function is always a tuple of numpy arrays. To evaluate
@@ -487,13 +487,38 @@ def compute(*args, **kwargs):
     >>> b = d + 2
     >>> A, B = da.compute(a, b)  # Compute both simultaneously
     """
-    dsk = merge(*[arg.dask for arg in args])
-    keys = [arg._keys() for arg in args]
-    results = get(dsk, keys, **kwargs)
+    def __init__(self, arr=None):
+        self.arr = arr
 
-    results2 = tuple(concatenate3(x) if arg.shape else unpack_singleton(x)
-                     for x, arg in zip(results, args))
-    return results2
+    def __getitem__(self, index):
+
+        if isinstance(index, Array):
+            return fancy_index_with_dask_array(self.arr, index)
+
+        # Slicing
+        out = next(names)
+        if not isinstance(index, tuple):
+            index = (index,)
+
+        if all(isinstance(i, slice) and i == slice(None) for i in index):
+            return self.arr.compute()
+
+        dsk, chunks = slice_array(out, self.arr.name, self.arr.chunks, index)
+
+        return Array(merge(self.arr.dask, dsk), out, chunks, dtype=self.arr._dtype).compute()
+
+    def __call__(self, *args, **kwargs):
+        if self.arr is not None:
+            args = (self.arr,) + args
+        dsk = merge(*[arg.dask for arg in args])
+        keys = [arg._keys() for arg in args]
+        results = get(dsk, keys, **kwargs)
+
+        results2 = tuple(concatenate3(x) if arg.shape else unpack_singleton(x)
+                         for x, arg in zip(results, args))
+        return results2
+
+compute = Compute()
 
 
 def store(sources, targets, **kwargs):
@@ -586,6 +611,10 @@ class Array(object):
         if dtype is not None:
             dtype = np.dtype(dtype)
         self._dtype = dtype
+
+    @property
+    def compute(self, *args, **kwargs):
+        return Compute(self)
 
     @property
     def _args(self):
@@ -690,10 +719,6 @@ class Array(object):
         myget = kwargs.get('get', get)
         myget(merge(dsk, self.dask), list(dsk.keys()))
 
-    @wraps(compute)
-    def compute(self, **kwargs):
-        result, = compute(self, **kwargs)
-        return result
 
     def __int__(self):
         return int(self.compute())
@@ -706,9 +731,6 @@ class Array(object):
         return complex(self.compute())
 
     def __getitem__(self, index):
-        if isinstance(index, Array):
-            return fancy_index_with_dask_array(self, index)
-
         # Field access, e.g. x['a'] or x[['a', 'b']]
         if (isinstance(index, (str, unicode)) or
             (    isinstance(index, list)
