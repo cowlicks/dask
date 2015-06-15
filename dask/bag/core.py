@@ -928,7 +928,7 @@ def stream_decompress(fmt, data):
     if fmt == 'bz2':
         return bz2_stream(data)
     else:
-        return map(bytes.decode, BytesIO(data))
+        return map(bytes.decode, BytesIO(data.encode('utf8')))
 
 
 def bz2_stream(compressed, chunksize=100000):
