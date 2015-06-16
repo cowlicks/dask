@@ -1,4 +1,29 @@
 from .client import Client
+from multiprocessing import Process, Queue
+
+
+def local_cluster_client(n_workers):
+    """
+    Start a local cluster and return a client connected to it.
+    """
+    def start_scheduler(queue):
+        from dask.distributed import Scheduler
+        scheduler = Scheduler()
+        queue.put((scheduler.address_to_clients, scheduler.address_to_workers))
+
+    def start_worker(scheduler_address):
+        from dask.distributed import Worker
+        worker = Worker(scheduler_address)
+
+    q = Queue()
+    scheduler = Process(target=start_scheduler, args=(q,))
+    scheduler.start()
+    to_clients, to_workers = q.get()
+    for i in range(n_workers):
+        worker = Process(target=start_worker, args=(to_workers,))
+        worker.start()
+
+    return Client(to_clients)
 
 
 def dask_client_from_ipclient(ipclient):
