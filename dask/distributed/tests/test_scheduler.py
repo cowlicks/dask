@@ -307,3 +307,13 @@ def test_monitor_workers():
         while w2.address in s.workers:  # wait to be removed
             sleep(1e-6)
         assert w2.address not in s.workers
+
+
+def test_scatter_doesnt_block():
+    with scheduler_and_workers(scheduler_kwargs={'worker_timeout': 0.1},
+                               worker_kwargs={'heartbeat': 0.01}) as (s, (w1, w2)):
+        data = {'x': 1, 'y': 2, 'z': 3}
+        w2.close()
+        while w2.status != 'closed':  # wait to close
+            sleep(1e-6)
+        s.scatter(data)
