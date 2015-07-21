@@ -127,7 +127,9 @@ class Scheduler(object):
         self.pool = ThreadPool(100)
         self.lock = Lock()
         self.status = 'run'
+
         self.queues = dict()
+        self.queues_by_worker = defaultdict(lambda: defaultdict(set))
 
         self._schedule_lock = Lock()
 
@@ -441,6 +443,8 @@ class Scheduler(object):
         self.queues[qkey] = queue
         counter = 0
         for (k, v), w in zip(key_value_pairs, workers):
+            self.queues_by_worker[w][qkey].add(k)
+
             header = {'function': 'setitem', 'jobid': k}
             payload = {'key': k, 'value': v}
             if block:
@@ -450,7 +454,7 @@ class Scheduler(object):
 
         if block:
             for i in range(counter):
-                queue.get()
+                msg = queue.get()
 
             del self.queues[qkey]
 
@@ -752,7 +756,22 @@ class Scheduler(object):
     def prune_and_notify(self, timeout=20):
         removed = self.prune_workers(timeout=timeout)
         if removed != []:
+            self.worker_death(removed)
             for w_address in self.workers:
                 header = {'function': 'worker-death'}
                 payload = {'removed': removed}
                 self.send_to_worker(w_address, header, payload)
+
+    def worker_death(self, removed_workers):
+        """
+        A worker died, check no queues are blocking waiting for data from the
+        worker.
+        """
+        with logerrors():
+            for w in removed_workers:
+                for queue, keys in self.queues_by_worker[w].items():
+                    for k in keys:
+                        msg = {'status': 'failed',
+                               'key': k,
+                               'worker': w}
+                        self.queues[queue].put(msg)
