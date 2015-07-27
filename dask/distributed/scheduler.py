@@ -554,8 +554,12 @@ class Scheduler(object):
         self.who_has[key].add(address)
         self.worker_has[address].add(key)
         queue = payload.get('queue')
+
+        msg = {'status': 'success',
+               'key': key,
+               'worker': address}
         if queue:
-            self.queues[queue].put(key)
+            self.queues[queue].put(msg)
 
     def close_workers(self):
         header = {'function': 'close'}

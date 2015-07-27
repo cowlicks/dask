@@ -12,6 +12,7 @@ from time import sleep
 import zmq
 import dill
 
+from dask.utils import raises
 from dask.distributed.scheduler import Scheduler
 from dask.distributed.worker import Worker
 
