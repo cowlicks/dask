@@ -393,10 +393,17 @@ class Scheduler(object):
         header = {'function': 'setitem', 'jobid': key}
         payload = {'key': key, 'value': value, 'queue': qkey}
         self.send_to_worker(address, header, payload)
+        self.queues_by_worker[address][qkey].add(key)
 
         if reply:
-            queue.get()
+            msg = queue.get()
+            # clean up before raising
+            self.queues_by_worker[address][qkey].remove(key)
             del self.queues[qkey]
+            if msg['status'] == 'failed':
+                k = msg['key']
+                w = msg['worker']
+                raise ValueError('Failed to send data %s to worker %s' % (k, w))
 
     def scatter(self, key_value_pairs, block=True):
         """ Scatter data to workers
