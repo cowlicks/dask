@@ -318,3 +318,16 @@ def test_scatter_doesnt_block():
         while w2.status != 'closed':  # wait to close
             sleep(1e-6)
         s.scatter(data)
+
+
+def test_send_data_doesnt_block():
+    with scheduler_and_workers(n=1, scheduler_kwargs={'worker_timeout': 0.1},
+                               worker_kwargs={'heartbeat': 0.01}) as (s, (w1,)):
+        w1.close()
+        while w1.status != 'closed':  # wait to close
+            sleep(1e-6)
+        assert raises(ValueError, lambda: s.send_data('x', 1, w1.address))
+        for w, queues in s.queues_by_worker.items():
+            if w == w1.address:
+                for qkey, keys in queues.items():
+                    assert keys == set()
