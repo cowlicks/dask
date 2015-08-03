@@ -331,3 +331,13 @@ def test_send_data_doesnt_block():
             if w == w1.address:
                 for qkey, keys in queues.items():
                     assert keys == set()
+
+def test_gather_doesnt_block():
+    with scheduler_and_workers(scheduler_kwargs={'worker_timeout': 0.1},
+                               worker_kwargs={'heartbeat': 0.01}) as (s, (w1, w2)):
+        s.send_data('x', 1, w1.address)
+        s.send_data('y', 2, w2.address)
+        w2.close()
+        while w2.status != 'closed':  # wait to close
+            sleep(1e-6)
+        result = s.gather(['x', 'y'])
