@@ -270,12 +270,16 @@ def boundaries(x, depth=None, kind=None):
         if d == 0:
             continue
 
-        if kind.get(i) == 'periodic':
+        kind_ax = kind.get(i)
+
+        if kind_ax == 'periodic':
             x = periodic(x, i, d)
-        elif kind.get(i) == 'reflect':
+        elif kind_ax == 'reflect':
             x = reflect(x, i, d)
-        elif kind.get(i) == 'nearest':
+        elif kind_ax == 'nearest':
             x = nearest(x, i, d)
+        elif hasattr(kind_ax, '__call__'):
+            x = kind_ax(x, i, d)
         elif i in kind:
             x = constant(x, i, d, kind[i])
 
