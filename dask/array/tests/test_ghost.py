@@ -301,3 +301,32 @@ def test_bad_depth_raises():
     depth = {0: 4, 1: 2}
 
     pytest.raises(ValueError, ghost, darr, depth=depth, boundary=1)
+
+
+def test_custom_boundary_kind():
+    def test_boundary(x, axis, depth):
+        if axis == 1:
+            return periodic(x, axis, depth)
+        else:
+            return constant(x, axis, depth, 0)
+
+    x = np.arange(64).reshape((8, 8))
+    d = da.from_array(x, chunks=(4, 4))
+
+    e = boundaries(d, {0: 2, 1: 1}, {0: test_boundary, 1: test_boundary})
+
+    expected = np.array(
+        [[ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         [ 7, 0, 1, 2, 3, 4, 5, 6, 7, 0],
+         [15, 8, 9,10,11,12,13,14,15, 8],
+         [23,16,17,18,19,20,21,22,23,16],
+         [31,24,25,26,27,28,29,30,31,24],
+         [39,32,33,34,35,36,37,38,39,32],
+         [47,40,41,42,43,44,45,46,47,40],
+         [55,48,49,50,51,52,53,54,55,48],
+         [63,56,57,58,59,60,61,62,63,56],
+         [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+         [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+
+    assert eq(e, expected)
