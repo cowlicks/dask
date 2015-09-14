@@ -675,3 +675,17 @@ def test_report_dtype_correction_on_csvs():
             assert False
         except ValueError as e:
             assert "'numbers': 'float64'" in str(e)
+
+
+def test_encoding_gh601():
+    with tmpfile('.csv') as fn:
+        ar = pd.Series(range(0, 100))
+        br = ar % 7
+        cr = br * 3.3
+        dr = br / 1.9836
+        test_df = pd.concat([ar, br, cr, dr], axis=1)
+        test_df.to_csv(fn)
+
+        d = dd.read_csv(fn, encoding='utf-16', dtype=str,
+                        chunkbytes=1000)
+        d.count().compute(get=get_sync)
