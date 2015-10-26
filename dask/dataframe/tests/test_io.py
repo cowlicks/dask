@@ -661,10 +661,14 @@ def test_report_dtype_correction_on_csvs():
 
 
 def test_hdf_globbing():
+    print('testing')
+    print('import tables')
     pytest.importorskip('tables')
+    print('making df')
     df = pd.DataFrame({'x': ['a', 'b', 'c', 'd'],
                        'y': [1, 2, 3, 4]}, index=[1., 2., 3., 4.])
 
+    print('make tdir')
     tdir = tempfile.mkdtemp()
     try:
         print("df.to_hdf(os.path.join(tdir, 'one.h5'), '/foo/data', format='table'")
@@ -708,6 +712,7 @@ def test_hdf_globbing():
         print("tm.assert_frame_equal(res.compute(), pd.concat([df] *  3))")
         tm.assert_frame_equal(res.compute(), pd.concat([df] *  3))
     finally:
+        print('finally')
         shutil.rmtree(tdir)
 
 
