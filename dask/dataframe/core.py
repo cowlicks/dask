@@ -159,7 +159,7 @@ class _Frame(Base):
         if isinstance(metadata, (Series, pd.Series)):
             metadata = metadata.name
         elif isinstance(metadata, (DataFrame, pd.DataFrame)):
-            metadata = metadata.columns
+            metadata = metadata.columns, metadata.index.names
 
         if np.isscalar(metadata) or metadata is None:
             return Series(dsk, _name, metadata, divisions)
@@ -1175,10 +1175,13 @@ class DataFrame(_Frame):
     _partition_type = pd.DataFrame
     _token_prefix = 'dataframe-'
 
-    def __new__(cls, dask, name, columns, divisions):
+    def __new__(cls, dask, name, metadata, divisions):
+        indexes, columns = metadata
+
         result = object.__new__(cls)
         result.dask = dask
         result._name = name
+        result.indexes = tuple(indexes)
         result.columns = tuple(columns)
         result.divisions = tuple(divisions)
         return result
