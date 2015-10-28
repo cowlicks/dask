@@ -344,7 +344,6 @@ def from_pandas(data, npartitions, sort=True):
     """
     indexes = getattr(getattr(data, 'index', None), 'names', None)
     columns = getattr(data, 'columns', getattr(data, 'name', None))
-    metadata = (indexes, columns)
 
     if columns is None and not isinstance(data, pd.Series):
         raise TypeError("Input must be a pandas DataFrame or Series")
@@ -363,7 +362,11 @@ def from_pandas(data, npartitions, sort=True):
     dsk = dict(((name, i), data.iloc[i * chunksize:(i + 1) * chunksize])
                for i in range(npartitions - 1))
     dsk[(name, npartitions - 1)] = data.iloc[chunksize*(npartitions - 1):]
-    return getattr(core, type(data).__name__)(dsk, name, metadata, divisions)
+    return_type = getattr(core, type(data).__name__)
+    if isinstance(return_type, pd.DataFrame):
+        return return_type(dsk, name, columns, divisions, indexes=indexes)
+    else:
+        return return_type(dsk, name, columns, divisions)
 
 
 def from_bcolz(x, chunksize=None, categorize=True, index=None, **kwargs):
