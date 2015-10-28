@@ -1175,13 +1175,12 @@ class DataFrame(_Frame):
     _partition_type = pd.DataFrame
     _token_prefix = 'dataframe-'
 
-    def __new__(cls, dask, name, metadata, divisions):
-        indexes, columns = metadata
+    def __new__(cls, dask, name, metadata, divisions, indexes=None):
 
         result = object.__new__(cls)
         result.dask = dask
         result._name = name
-        result.indexes = tuple(indexes)
+        result.indexes = tuple(indexes) if indexes is not None else None
         result.columns = tuple(columns)
         result.divisions = tuple(divisions)
         return result
