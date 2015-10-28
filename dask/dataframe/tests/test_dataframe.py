@@ -2433,3 +2433,13 @@ def test_reset_index():
     assert len(res.index.compute()) == len(exp.index)
     assert res.columns == tuple(exp.columns)
     assert_array_almost_equal(res.compute().values, exp.values)
+
+def test_reset_index_name():
+    set_trace()
+    df = pd.DataFrame({'x': [1, 1, 2, 2, 3, 4], 'y': [10, 11, 20, 21, 30, 40]})
+    ddf = dd.from_pandas(df, npartitions=2)
+
+    res = ddf.groupby('x').sum().reset_index()
+    exp = df.groupby('x').sum().reset_index()
+
+    assert res.columns == tuple(exp.columns)
