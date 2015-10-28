@@ -201,7 +201,9 @@ class _Frame(Base):
         name = self._name + '-index'
         dsk = dict(((name, i), (getattr, key, 'index'))
                    for i, key in enumerate(self._keys()))
-        return Index(merge(dsk, self.dask), name, None, self.divisions)
+        index_names = getattr(self, 'indexes', None)
+        return Index(merge(dsk, self.dask), name, None, self.divisions,
+                     index_names=index_names)
 
     @property
     def known_divisions(self):
