@@ -363,7 +363,7 @@ def from_pandas(data, npartitions, sort=True):
                for i in range(npartitions - 1))
     dsk[(name, npartitions - 1)] = data.iloc[chunksize*(npartitions - 1):]
     return_type = getattr(core, type(data).__name__)
-    if isinstance(return_type, pd.DataFrame):
+    if issubclass(return_type, DataFrame):
         return return_type(dsk, name, columns, divisions, indexes=indexes)
     else:
         return return_type(dsk, name, columns, divisions)
