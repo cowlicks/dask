@@ -1175,7 +1175,7 @@ class DataFrame(_Frame):
     _partition_type = pd.DataFrame
     _token_prefix = 'dataframe-'
 
-    def __new__(cls, dask, name, metadata, divisions, indexes=None):
+    def __new__(cls, dask, name, columns, divisions, indexes=None):
 
         result = object.__new__(cls)
         result.dask = dask
