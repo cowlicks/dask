@@ -1296,7 +1296,8 @@ class DataFrame(_Frame):
 
     @derived_from(pd.DataFrame)
     def reset_index(self):
-        new_columns = ['index'] + list(self.columns)
+        i_name = 'index' if self.index.name is None else self.index.name
+        new_columns = [i_name] + list(self.columns)
         reset_index = self._partition_type.reset_index
         out = self.map_partitions(reset_index, columns=new_columns)
         out.divisions = [None] * (self.npartitions + 1)
