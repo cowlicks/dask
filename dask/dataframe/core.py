@@ -159,7 +159,7 @@ class _Frame(Base):
         if isinstance(metadata, (Series, pd.Series)):
             metadata = metadata.name
         elif isinstance(metadata, (DataFrame, pd.DataFrame)):
-            metadata = metadata.columns, metadata.index.names
+            metadata = metadata.columns
 
         if np.isscalar(metadata) or metadata is None:
             return Series(dsk, _name, metadata, divisions)
