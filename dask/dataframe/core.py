@@ -1137,6 +1137,11 @@ class Index(Series):
 
     _token_prefix = 'index-'
 
+    def __new__(cls, dsk, _name, name, divisions, index_names=(None,)):
+        result = super(Index, cls).__new__(cls, dsk, _name, name, divisions)
+        result.names = index_names
+        return result
+
     @property
     def index(self):
         msg = "'{0}' object has no attribute 'index'"
