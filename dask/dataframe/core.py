@@ -1139,9 +1139,9 @@ class Index(Series):
 
     _token_prefix = 'index-'
 
-    def __new__(cls, dsk, _name, name, divisions, index_names=(None,)):
+    def __new__(cls, dsk, _name, name, divisions, index_names=None):
         result = super(Index, cls).__new__(cls, dsk, _name, name, divisions)
-        result.names = index_names
+        result.names = index_names if index_names is not None else (None,)
         return result
 
     @property
